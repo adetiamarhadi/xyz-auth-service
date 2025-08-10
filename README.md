@@ -8,6 +8,7 @@ This is the **Auth Service** for a microservice-based system. It handles user re
 - Spring Boot 3.5.3
 - Maven
 - JUnit + MockMvc for unit testing
+- Maria DB 11.2
 
 ## Features
 
