@@ -1,18 +1,22 @@
 package com.github.adetiamarhadi.xyz_auth_service.entity;
 
+import com.github.adetiamarhadi.xyz_auth_service.config.JpaAuditingConfiguration;
 import com.github.adetiamarhadi.xyz_auth_service.repository.UserRepository;
+import com.github.adetiamarhadi.xyz_auth_service.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(JpaAuditingConfiguration.class)
 @ActiveProfiles("test")
 @Transactional
 class UserEntityTest {
@@ -23,7 +27,7 @@ class UserEntityTest {
     @Test
     void shouldInsertUserEntity() {
 
-        String uuid = UUID.randomUUID().toString();
+        String uuid = UUID.generate();
 
         UserEntity user = UserEntity.builder()
                 .uuid(uuid)

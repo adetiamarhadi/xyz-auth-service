@@ -7,8 +7,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,28 +20,31 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    protected Long id;
 
     @Version
-    private Integer version;
+    protected Integer version;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, insertable = false)
-    private LocalDateTime createdAt;
+    protected LocalDateTime createdAt;
 
     @Column(name = "created_by", length = 36)
-    private String createdBy;
+    protected String createdBy;
 
     @LastModifiedDate
     @Column(name = "updated_at", insertable = false)
-    private LocalDateTime updatedAt;
+    protected LocalDateTime updatedAt;
 
     @Column(name = "updated_by", length = 36)
-    private String updatedBy;
+    protected String updatedBy;
 }

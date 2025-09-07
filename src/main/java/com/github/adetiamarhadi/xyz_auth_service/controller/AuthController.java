@@ -9,20 +9,25 @@ import com.github.adetiamarhadi.xyz_auth_service.dto.RefreshTokenRequest;
 import com.github.adetiamarhadi.xyz_auth_service.dto.ResendOtpRequest;
 import com.github.adetiamarhadi.xyz_auth_service.dto.ResetPasswordRequest;
 import com.github.adetiamarhadi.xyz_auth_service.dto.SignupRequest;
+import com.github.adetiamarhadi.xyz_auth_service.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
+
+    private final AuthService authService;
 
     @Operation(summary = "Register a new user")
     @ApiResponses(value = {
@@ -31,7 +36,10 @@ public class AuthController {
     })
     @PostMapping("/signup")
     public ResponseEntity<GenericResponse> signup(@RequestBody SignupRequest request) {
-        return ResponseEntity.ok(new GenericResponse("Signup mock successful"));
+
+        GenericResponse response = authService.signup(request);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Verify OTP sent to email")
