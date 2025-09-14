@@ -17,6 +17,9 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+authservice:
+  secret-key: cfb8cde0e80cff0b7052722a8216cbfee9be66c54fa94d8a69f23f31d147fb96368c9c2a3f98123c7968ed74122f53d3e20681ec412f3a72bed6096f648460a3
+
 ---
 spring:
   config:
