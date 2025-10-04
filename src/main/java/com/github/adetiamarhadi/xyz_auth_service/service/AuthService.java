@@ -17,15 +17,16 @@ public interface AuthService {
      *
      * <p>This method performs the following steps:
      * <ul>
-     *     <li>Checks if the email in the request is already registered.</li>
-     *     <li>If not, creates a new {@link UserEntity} with status "PENDING".</li>
-     *     <li>Encodes the password using the configured {@link PasswordEncoder}.</li>
-     *     <li>Persists the user in the database.</li>
+     *     <li>Validates the signup request data.</li>
+     *     <li>Checks if the email is already registered.</li>
+     *     <li>Creates a new user account with pending status.</li>
+     *     <li>Securely stores the user credentials.</li>
+     *     <li>Initiates the account verification process.</li>
      * </ul>
      *
-     * @param request the signup request containing the user's email and password
-     * @return a {@link GenericResponse} indicating success or failure
-     * @throws IllegalArgumentException if the email is already registered
+     * @param request the signup request containing the user's registration data
+     * @return a {@link GenericResponse} indicating the result of the signup operation
+     * @throws IllegalArgumentException if the email is already registered or request data is invalid
      */
     GenericResponse signup(SignupRequest request);
 

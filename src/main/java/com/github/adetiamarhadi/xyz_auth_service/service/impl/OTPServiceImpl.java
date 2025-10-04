@@ -35,6 +35,7 @@ public class OTPServiceImpl implements OTPService {
                 .otpCodeHash(passwordEncoder.encode(otp))
                 .expiredAt(LocalDateTime.now().plusMinutes(2))
                 .attemptCount(0)
+                .createdBy("system")
                 .build();
 
         userOTPRepository.save(entity);
