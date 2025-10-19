@@ -58,7 +58,7 @@ class SignupControllerTest extends TestContainersConfig {
             restTemplate.postForEntity(baseUrl() + "/signup", request, GenericResponse.class);
         });
 
-        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(ex.getResponseBodyAsString().contains("Email already registered"));
 
         // pastikan user baru tidak ke-insert

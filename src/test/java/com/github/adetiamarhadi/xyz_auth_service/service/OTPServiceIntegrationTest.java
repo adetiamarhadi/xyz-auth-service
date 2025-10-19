@@ -33,7 +33,7 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
     }
 
     @Test
-    void shouldFailVerificationWithInvalidOTP() {
+    void shouldReturnFalseForInvalidOTP() {
         String uuid = UUID.generate();
         String otp = otpService.generate(uuid, OTPType.SIGNUP);
 
@@ -41,9 +41,8 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         assertEquals(6, otp.length());
         assertTrue(otp.matches("\\d+"));
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, "999999"));
-        assertEquals("Invalid or expired OTP", exception.getMessage());
+        boolean invalid = otpService.verify(uuid, OTPType.SIGNUP, "999999");
+        assertFalse(invalid);
     }
 
     @Test
@@ -56,9 +55,8 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         assertTrue(firstVerify);
 
         // Second verification should fail
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, otp));
-        assertEquals("OTP not found", exception.getMessage());
+        boolean reuse = otpService.verify(uuid, OTPType.SIGNUP, otp);
+        assertFalse(reuse);
     }
 
     @Test
@@ -81,9 +79,8 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         assertTrue(firstResult);
 
         // After successful verification, second OTP should no longer be valid
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, secondOtp));
-        assertEquals("OTP not found", exception.getMessage());
+        boolean secondStillValid = otpService.verify(uuid, OTPType.SIGNUP, secondOtp);
+        assertFalse(secondStillValid);
     }
 
     @Test
@@ -107,14 +104,12 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         String otp = otpService.generate(uuid, OTPType.SIGNUP);
 
         // First invalid attempt
-        Exception firstAttempt = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, "111111"));
-        assertEquals("Invalid or expired OTP", firstAttempt.getMessage());
+        boolean firstAttempt = otpService.verify(uuid, OTPType.SIGNUP, "111111");
+        assertFalse(firstAttempt);
 
         // Second invalid attempt
-        Exception secondAttempt = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, "222222"));
-        assertEquals("Invalid or expired OTP", secondAttempt.getMessage());
+        boolean secondAttempt = otpService.verify(uuid, OTPType.SIGNUP, "222222");
+        assertFalse(secondAttempt);
 
         // Valid OTP should still work
         boolean result = otpService.verify(uuid, OTPType.SIGNUP, otp);
@@ -129,9 +124,8 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         String user1Otp = otpService.generate(user1Uuid, OTPType.SIGNUP);
 
         // Try to verify user1's OTP with user2's UUID
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(user2Uuid, OTPType.SIGNUP, user1Otp));
-        assertEquals("OTP not found", exception.getMessage());
+        boolean crossUser = otpService.verify(user2Uuid, OTPType.SIGNUP, user1Otp);
+        assertFalse(crossUser);
     }
 
     @Test
@@ -147,9 +141,8 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         assertTrue(secondResult);
 
         // First OTP should no longer be valid
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, firstOtp));
-        assertEquals("OTP not found", exception.getMessage());
+        boolean firstStillValid = otpService.verify(uuid, OTPType.SIGNUP, firstOtp);
+        assertFalse(firstStillValid);
     }
 
     @Test
@@ -166,13 +159,11 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         assertTrue(result);
 
         // All other OTPs should be invalid
-        Exception exception1 = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, firstOtp));
-        assertEquals("OTP not found", exception1.getMessage());
+        boolean firstInvalid = otpService.verify(uuid, OTPType.SIGNUP, firstOtp);
+        assertFalse(firstInvalid);
 
-        Exception exception2 = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, thirdOtp));
-        assertEquals("OTP not found", exception2.getMessage());
+        boolean thirdInvalid = otpService.verify(uuid, OTPType.SIGNUP, thirdOtp);
+        assertFalse(thirdInvalid);
     }
 
     @Test
@@ -184,21 +175,18 @@ class OTPServiceIntegrationTest extends TestContainersConfig {
         String secondOtp = otpService.generate(uuid, OTPType.SIGNUP);
 
         // Make invalid attempts (should increment attempt count for both OTPs)
-        Exception exception1 = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, "111111"));
-        assertEquals("Invalid or expired OTP", exception1.getMessage());
+        boolean invalid1 = otpService.verify(uuid, OTPType.SIGNUP, "111111");
+        assertFalse(invalid1);
 
-        Exception exception2 = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, "222222"));
-        assertEquals("Invalid or expired OTP", exception2.getMessage());
+        boolean invalid2 = otpService.verify(uuid, OTPType.SIGNUP, "222222");
+        assertFalse(invalid2);
 
         // Both OTPs should still be valid for correct verification
         boolean firstResult = otpService.verify(uuid, OTPType.SIGNUP, firstOtp);
         assertTrue(firstResult);
 
         // Second OTP should be deleted
-        Exception exception3 = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(uuid, OTPType.SIGNUP, secondOtp));
-        assertEquals("OTP not found", exception3.getMessage());
+        boolean secondInvalid = otpService.verify(uuid, OTPType.SIGNUP, secondOtp);
+        assertFalse(secondInvalid);
     }
 }

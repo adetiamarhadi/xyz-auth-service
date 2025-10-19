@@ -22,6 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -32,8 +35,8 @@ public class AuthServiceImpl implements AuthService {
     private final OTPService otpService;
     private final OTPNotificationService loggingOTPNotificationServiceImpl;
 
-    @Override
     @Transactional
+    @Override
     public GenericResponse signup(SignupRequest request) {
 
         log.info("Starting signup process for email: {}", request.email());
@@ -70,9 +73,41 @@ public class AuthServiceImpl implements AuthService {
         return new GenericResponse("Signup successful");
     }
 
+    @Transactional
     @Override
     public GenericResponse verifyOtp(OtpVerificationRequest request) {
-        return null;
+
+        log.info("Starting OTP verification for email: {}", request.email());
+
+        Optional<UserEntity> optUserEntity = userRepository.findByEmail(request.email());
+
+        if (optUserEntity.isEmpty()) {
+
+            log.warn("OTP verification failed - email not found: {}", request.email());
+
+            throw new IllegalArgumentException("Invalid OTP");
+        }
+
+        UserEntity userEntity = optUserEntity.get();
+
+        boolean verify = otpService.verify(userEntity.getUuid(), OTPType.SIGNUP, request.otp());
+
+        if (!verify) {
+
+            log.warn("OTP verification failed for email: {}", request.email());
+
+            throw new IllegalArgumentException("Invalid OTP");
+        }
+
+        userEntity.setStatus("ACTIVE");
+        userEntity.setVerifiedAt(LocalDateTime.now());
+        userEntity.setUpdatedBy("system");
+
+        userRepository.save(userEntity);
+
+        log.info("OTP verified successfully for email: {}", request.email());
+
+        return new GenericResponse("OTP verified successfully");
     }
 
     @Override

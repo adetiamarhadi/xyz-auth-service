@@ -105,43 +105,47 @@ class OTPServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenOTPNotFound() {
+    void shouldReturnFalseWhenOTPNotFound() {
         // Given
         when(userOTPRepository.findAllByUserUuidAndOtpTypeAndUsedAtIsNull(anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
 
-        // When/Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP));
-        assertEquals("OTP not found", exception.getMessage());
+        // When
+        boolean result = otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP);
+
+        // Then
+        assertFalse(result);
+        verify(userOTPRepository, never()).save(any(UserOTPEntity.class));
     }
 
     @Test
-    void shouldThrowExceptionWhenOTPExpired() {
+    void shouldReturnFalseWhenOTPExpired() {
         // Given
         UserOTPEntity entity = createExpiredOTPEntity();
         when(userOTPRepository.findAllByUserUuidAndOtpTypeAndUsedAtIsNull(TEST_USER_UUID, OTPType.SIGNUP.name()))
                 .thenReturn(List.of(entity));
         when(passwordEncoder.matches(TEST_OTP, HASHED_OTP)).thenReturn(true);
 
-        // When/Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP));
-        assertEquals("Invalid or expired OTP", exception.getMessage());
+        // When
+        boolean result = otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP);
+
+        // Then
+        assertFalse(result);
         verify(userOTPRepository).save(otpEntityCaptor.capture());
         assertEquals(1, otpEntityCaptor.getValue().getAttemptCount());
     }
 
     @Test
-    void shouldNotFindAlreadyUsedOTP() {
+    void shouldReturnFalseWhenAlreadyUsedOTPNotFound() {
         // Given - used OTPs should not be returned by findAllByUserUuidAndOtpTypeAndUsedAtIsNull
         when(userOTPRepository.findAllByUserUuidAndOtpTypeAndUsedAtIsNull(TEST_USER_UUID, OTPType.SIGNUP.name()))
                 .thenReturn(Collections.emptyList());
 
-        // When/Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP));
-        assertEquals("OTP not found", exception.getMessage());
+        // When
+        boolean result = otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP);
+
+        // Then
+        assertFalse(result);
     }
 
     @Test
@@ -152,11 +156,11 @@ class OTPServiceImplTest {
                 .thenReturn(List.of(entity));
         when(passwordEncoder.matches(TEST_OTP, HASHED_OTP)).thenReturn(false);
 
-        // When/Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP));
+        // When
+        boolean result = otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, TEST_OTP);
 
-        assertEquals("Invalid or expired OTP", exception.getMessage());
+        // Then
+        assertFalse(result);
         verify(userOTPRepository).save(otpEntityCaptor.capture());
         assertEquals(1, otpEntityCaptor.getValue().getAttemptCount());
     }
@@ -191,11 +195,11 @@ class OTPServiceImplTest {
         when(passwordEncoder.matches("999999", HASHED_OTP)).thenReturn(false);
         when(passwordEncoder.matches("999999", "another-hash")).thenReturn(false);
 
-        // When/Then
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, "999999"));
+        // When
+        boolean result = otpService.verify(TEST_USER_UUID, OTPType.SIGNUP, "999999");
 
-        assertEquals("Invalid or expired OTP", exception.getMessage());
+        // Then
+        assertFalse(result);
         verify(userOTPRepository, times(2)).save(any(UserOTPEntity.class));
     }
 

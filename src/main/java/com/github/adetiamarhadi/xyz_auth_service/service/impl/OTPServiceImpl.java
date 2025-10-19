@@ -6,6 +6,7 @@ import com.github.adetiamarhadi.xyz_auth_service.repository.UserOTPRepository;
 import com.github.adetiamarhadi.xyz_auth_service.service.OTPService;
 import com.github.adetiamarhadi.xyz_auth_service.type.OTPType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class OTPServiceImpl implements OTPService {
@@ -43,15 +45,18 @@ public class OTPServiceImpl implements OTPService {
         return otp;
     }
 
-    @Override
     @Transactional
+    @Override
     public boolean verify(String userUuid, OTPType otpType, String otpInput) {
 
         List<UserOTPEntity> entities = userOTPRepository
                 .findAllByUserUuidAndOtpTypeAndUsedAtIsNull(userUuid, otpType.name());
 
         if (entities.isEmpty()) {
-            throw new IllegalArgumentException("OTP not found");
+
+            log.warn("No OTP found for userUuid: {} and otpType: {}", userUuid, otpType);
+
+            return false;
         }
 
         UserOTPEntity validEntity = null;
@@ -67,14 +72,29 @@ public class OTPServiceImpl implements OTPService {
 
             for (UserOTPEntity entity : entities) {
 
-                entity.setAttemptCount(entity.getAttemptCount() + 1);
+                int attemptCount = entity.getAttemptCount() + 1;
+
+                entity.setAttemptCount(attemptCount);
 
                 userOTPRepository.save(entity);
+
+                if (attemptCount >= 3) {
+
+                    userOTPRepository.deleteAllUnusedByUserUuidAndOtpType(userUuid, otpType.name());
+
+                    log.warn("OTP entity deleted due to too many invalid attempts for userUuid: {} and otpType: {}",
+                            userUuid, otpType);
+
+                    throw new IllegalArgumentException("Too many invalid OTP attempts. Please request a new OTP.");
+                }
             }
 
-            throw new IllegalArgumentException("Invalid or expired OTP");
+            log.warn("Invalid OTP attempt for userUuid: {} and otpType: {}", userUuid, otpType);
+
+            return false;
         }
 
+        validEntity.setAttemptCount(validEntity.getAttemptCount() + 1);
         validEntity.setUsedAt(LocalDateTime.now());
 
         userOTPRepository.save(validEntity);

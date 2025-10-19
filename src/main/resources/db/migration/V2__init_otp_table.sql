@@ -1,4 +1,4 @@
-CREATE TABLE user_otp (
+CREATE TABLE IF NOT EXISTS user_otp (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_uuid CHAR(36) NOT NULL,
     otp_code_hash VARCHAR(100) NOT NULL,

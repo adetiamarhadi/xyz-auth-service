@@ -5,6 +5,8 @@ import com.github.adetiamarhadi.xyz_auth_service.dto.SignupRequest;
 import com.github.adetiamarhadi.xyz_auth_service.entity.UserEntity;
 import com.github.adetiamarhadi.xyz_auth_service.repository.UserRepository;
 import com.github.adetiamarhadi.xyz_auth_service.service.impl.AuthServiceImpl;
+import com.github.adetiamarhadi.xyz_auth_service.notification.OTPNotificationService;
+import com.github.adetiamarhadi.xyz_auth_service.type.OTPType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -16,10 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SignupTest {
 
@@ -28,6 +27,12 @@ class SignupTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private OTPService otpService;
+
+    @Mock
+    private OTPNotificationService loggingOTPNotificationServiceImpl;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -62,6 +67,8 @@ class SignupTest {
         SignupRequest request = new SignupRequest("new@example.com", "password123");
         when(userRepository.existsByEmail(request.email())).thenReturn(false);
         when(passwordEncoder.encode(request.password())).thenReturn("encodedPassword");
+        when(otpService.generate(any(), any(OTPType.class))).thenReturn("654321");
+        doNothing().when(loggingOTPNotificationServiceImpl).sendOtp(anyString(), anyString());
 
         // when
         GenericResponse response = authService.signup(request);

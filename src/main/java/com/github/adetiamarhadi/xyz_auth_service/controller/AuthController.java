@@ -49,7 +49,10 @@ public class AuthController {
     })
     @PostMapping("/verify-otp")
     public ResponseEntity<GenericResponse> verifyOtp(@RequestBody OtpVerificationRequest request) {
-        return ResponseEntity.ok(new GenericResponse("OTP verification mock successful"));
+
+        GenericResponse response = authService.verifyOtp(request);
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Resend OTP to email")

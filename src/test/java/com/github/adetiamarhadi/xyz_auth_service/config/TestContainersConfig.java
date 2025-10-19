@@ -22,5 +22,14 @@ public abstract class TestContainersConfig {
         registry.add("spring.datasource.username", mariadb::getUsername);
         registry.add("spring.datasource.password", mariadb::getPassword);
         registry.add("spring.datasource.driver-class-name", mariadb::getDriverClassName);
+
+        // Ensure Flyway runs against the container database during tests
+        registry.add("spring.flyway.enabled", () -> true);
+        registry.add("spring.flyway.locations", () -> "classpath:db/migration");
+        registry.add("spring.flyway.baseline-on-migrate", () -> true);
+
+        // Use Hibernate with no DDL auto (schema managed by Flyway)
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MariaDBDialect");
     }
 }

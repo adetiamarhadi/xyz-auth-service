@@ -72,9 +72,7 @@ class AuthControllerTest {
 
     @Test
     void testVerifyOtp() throws Exception {
-        OtpVerificationRequest request = new OtpVerificationRequest();
-        request.setEmail("test@example.com");
-        request.setOtp("123456");
+        OtpVerificationRequest request = new OtpVerificationRequest("test@example.com", "123456");
 
         mockMvc.perform(post("/api/v1/auth/verify-otp")
                         .contentType(MediaType.APPLICATION_JSON)
